@@ -24,6 +24,8 @@ case class AttributeName(components: List[String], index: Option[Int]) {
   def >=[V: DynamoFormat](v: V) = KeyIs(this, GTE, v)
   def beginsWith[V: DynamoFormat](v: V) = BeginsWith(this, v)
   def between[V: DynamoFormat](bounds: Bounds[V]) = Between(this, bounds)
+  def contain(v: String) = Contains(this, v)
+  def notContain(v: String) = ContainsNot(this, v)
 }
 
 object AttributeName {

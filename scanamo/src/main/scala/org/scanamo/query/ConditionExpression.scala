@@ -89,6 +89,30 @@ object ConditionExpression {
       }
     }
 
+  implicit def containsCondition[String] = new ConditionExpression[Contains]{
+    val placeholder = "containsCondition"
+    val prefix = "keyContains"
+
+    override def apply(t: Contains): RequestCondition =
+      RequestCondition(
+        s"contains(#${t.key.placeholder(s"$prefix")}, :$placeholder)",
+        t.key.attributeNames(s"#$prefix"),
+        Some(DynamoObject(s"$placeholder" -> t.v))
+      )
+  }
+
+  implicit def notContainsCondition[String] = new ConditionExpression[ContainsNot]{
+    val placeholder = "notContainsCondition"
+    val prefix = "keyNotContains"
+
+    override def apply(t: ContainsNot): RequestCondition =
+      RequestCondition(
+        s"NOT contains(#${t.key.placeholder(s"$prefix")}, :$placeholder)",
+        t.key.attributeNames(s"#$prefix"),
+        Some(DynamoObject(s"$placeholder" -> t.v))
+      )
+  }
+
   implicit def attributeExistsCondition = new ConditionExpression[AttributeExists] {
     val prefix = "attributeExists"
     override def apply(t: AttributeExists): RequestCondition =

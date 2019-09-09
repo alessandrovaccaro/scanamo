@@ -53,6 +53,16 @@ final case class Between[V: DynamoFormat](key: AttributeName, bounds: Bounds[V])
   )
 }
 
+final case class Contains(key: AttributeName, v: String) extends RangeKeyCondition[String] {
+  override def keyConditionExpression(s: String): String = s"contains(#${key.placeholder(s)}, :containsValue)"
+  override def attributes = Map("containsValue" -> v)
+}
+
+final case class ContainsNot(key: AttributeName, v: String) extends RangeKeyCondition[String] {
+  override def keyConditionExpression(s: String): String = s"NOT contains(#${key.placeholder(s)}, :notContainsValue)"
+  override def attributes = Map("notContainsValue" -> v)
+}
+
 final case class AttributeExists(key: AttributeName)
 final case class AttributeNotExists(key: AttributeName)
 final case class Not[T: ConditionExpression](condition: T)

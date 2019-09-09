@@ -413,6 +413,42 @@ class ScanamoTest extends FunSpec with Matchers {
     }
   }
 
+  it("scan for items that contain a string in an attribute") {
+    case class Farmer(firstName: String, surname: String, age: Option[Int])
+
+    LocalDynamoDB.usingRandomTable(client)("firstName" -> S, "surname" -> S) { t =>
+      val farmersTable = Table[Farmer](t)
+      val farmerOps = for {
+        _ <- farmersTable.put(Farmer("Fred", "Perry", None))
+        _ <- farmersTable.put(Farmer("Fred", "McDonald", Some(54)))
+        farmerWithNoAge <- farmersTable.filter("surname" contain "McDonald").scan
+      } yield farmerWithNoAge
+      val result = scanamo.exec(farmerOps)
+      println(result)
+      result should equal(
+        List(Right(Farmer("Fred", "McDonald", Some(54))))
+      )
+    }
+  }
+
+  it("scan for items that not contain a string in an attribute") {
+    case class Farmer(firstName: String, surname: String, age: Option[Int])
+
+    LocalDynamoDB.usingRandomTable(client)("firstName" -> S, "surname" -> S) { t =>
+      val farmersTable = Table[Farmer](t)
+      val farmerOps = for {
+        _ <- farmersTable.put(Farmer("Fred", "Perry", None))
+        _ <- farmersTable.put(Farmer("Fred", "McDonald", Some(54)))
+        farmerWithNoAge <- farmersTable.filter("surname" notContain "McDonald").scan
+      } yield farmerWithNoAge
+      val result = scanamo.exec(farmerOps)
+      println(result)
+      result should equal(
+        List(Right(Farmer("Fred", "Perry", None)))
+      )
+    }
+  }
+
   it("should put multiple items asynchronously") {
     case class Rabbit(name: String)
 
